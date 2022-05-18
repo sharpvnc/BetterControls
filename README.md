@@ -4,7 +4,7 @@ Please note that this project is under active development and as such, **_no lic
 
 ---
 
-![Project Logo](/resources/main_image.png)
+![image](https://user-images.githubusercontent.com/9104853/169084855-c4de8e04-544d-4007-86dc-92d888238cf5.png)
 
 BetterControls is a set of **enhanced** .NET 6 implementations of various native Windows API controls, including the Windows **split button**, **toolbar**, **Rebar**, **image combo box** among others. **including both client & server implementations**. Better Controls is designed to be **extensible and as easy-to-use** as desired from the ground up, depending on the use cases required. Where a Better control builds on an existing .NET implementation, the control mimics that control similarly.
 
