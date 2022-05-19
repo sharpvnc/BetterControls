@@ -37,7 +37,7 @@ This library makes small references to the .NET Framework Reference Source, that
 
 ## Getting Started
 
-Better Controls must be consumed in a project via NuGet - that is, you can't reference the compiled library directly. This is a limitation relating to the .NET 6 Windows Forms designer. **This project will not currently compile from sources, due to being incomplete. The available sources are here for reference only.**
+Better Controls must be consumed in a project via NuGet - that is, you can't reference the compiled library directly. This is a limitation relating to the .NET 6 Windows Forms designer. *This project will not currently compile from sources, due to being incomplete. The available sources are here for reference only.*
 
 Once the library is installed via NuGet, all available controls will show in the toolbox. These controls can be dragged and dropped to the parent control (typically a form) in the exact same way as any other control. The controls should be configured using the Property Window, or in code, as deemed appropriate. See the Wiki for guidance on getting started with specific controls.
 
