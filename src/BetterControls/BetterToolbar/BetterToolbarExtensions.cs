@@ -24,33 +24,28 @@ SOFTWARE.
 
 */
 
+using System;
+using System.Windows.Forms;
+
 namespace BetterControls
 {
     /// <summary>
-    /// Represents a toolbar separator.
+    /// Extension methods for <see cref="BetterToolbar"/>.
     /// </summary>
-    public partial class BetterToolbarSeparator : BetterToolbarItem
+    public static class BetterToolbarExtensions
     {
         /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
+        /// Adds a <see cref="BetterToolbarSeparator"/> to a collection of toolbar items.
         /// </summary>
-        public BetterToolbarSeparator() { }
-
-        /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
-        /// </summary>
-        /// <param name="parent">The parent toolbar as an instance of <see cref="BetterToolbar"/>.</param>
-        private protected BetterToolbarSeparator(BetterToolbar parent)
-            : base(parent)
-        { }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <returns></returns>
-        protected override int ComputeAutoSizeWidth()
+        /// <param name="items">The collection of toolbar items to add to.</param>
+        public static void AddSeparator(this BetterToolbarItemCollection items)
         {
-            return 8;
+            if (items is null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            items.Add(new BetterToolbarSeparator());
         }
     }
 }
