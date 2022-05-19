@@ -42,13 +42,13 @@ namespace BetterControls.Collections
         /// <summary>
         /// Initialize a new instance of <see cref="ElementCollection{TElementType}"/>.
         /// </summary>
-        protected ElementCollection() { }
+        private protected ElementCollection() { }
 
         /// <summary>
         /// Initialize a new instance of <see cref="ElementCollection{TElementType}"/>.
         /// </summary>
         /// <param name="ownerElement">The owner element as an instance of <see cref="IElement"/>.</param>
-        protected ElementCollection(IElement ownerElement)
+        private protected ElementCollection(IElement ownerElement)
             : base(ownerElement)
         { }
 
