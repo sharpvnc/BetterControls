@@ -24,27 +24,24 @@ SOFTWARE.
 
 */
 
-using System;
-
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// The different check styles for a better menu item.
     /// </summary>
-    public static class BetterToolbarExtensions
+    public enum BetterMenuItemCheckStyle
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// The item is not checked.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
-        {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            items.Add(new BetterToolbarSeparator());
-        }
+        Disabled = 0,
+        /// <summary>
+        /// The item is checked with a check mark.
+        /// </summary>
+        Check = 1,
+        /// <summary>
+        /// The item is checked with a radio style check mark.
+        /// </summary>
+        Radio = 2
     }
 }

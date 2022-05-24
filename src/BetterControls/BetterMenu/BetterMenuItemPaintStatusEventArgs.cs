@@ -25,26 +25,39 @@ SOFTWARE.
 */
 
 using System;
+using System.Drawing;
 
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Event arguments for when the status part of each menu item is painted.
     /// </summary>
-    public static class BetterToolbarExtensions
+    public class BetterMenuItemPaintStatusEventArgs
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// Initialize a new instance of <see cref="BetterMenuItemPaintStatusEventArgs"/>.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
+        /// <param name="graphics">The graphics associated with this paint operation.</param>
+        /// <param name="bounds">The outer bounds of this paint operation.</param>
+        internal BetterMenuItemPaintStatusEventArgs(Graphics graphics, Rectangle bounds)
         {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            items.Add(new BetterToolbarSeparator());
+            Graphics = graphics ?? throw new ArgumentNullException(nameof(graphics));
+            Bounds = bounds;
         }
+
+        /// <summary>
+        /// Gets the device context associated with this paint operation.
+        /// </summary>
+        public IDeviceContext DeviceContext => Graphics;
+
+        /// <summary>
+        /// Gets the graphics associated with this paint operation.
+        /// </summary>
+        public Graphics Graphics { get; }
+
+        /// <summary>
+        /// Gets the outer bounds of this paint operation.
+        /// </summary>
+        public Rectangle Bounds { get; }
     }
 }

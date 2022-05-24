@@ -42,13 +42,15 @@ namespace BetterControls
         /// <summary>
         /// Initialize a new instance of <see cref="BetterToolbarItemCollection"/>.
         /// </summary>
-        /// <param name="ownerToolbar">The parent toolbar as an instance of <see cref="BetterToolbar"/>.</param>
+        /// <param name="ownerToolbar">The owner control as an instance of <see cref="BetterToolbar"/>.</param>
         internal BetterToolbarItemCollection(BetterToolbar ownerToolbar)
             : base(ownerToolbar)
         {
+            _uniqueItems = new HashSet<BetterToolbarItem>();
             _uniqueIdentifierItems = new Dictionary<int, BetterToolbarItem>();
         }
 
+        private HashSet<BetterToolbarItem> _uniqueItems;
         private Dictionary<int, BetterToolbarItem> _uniqueIdentifierItems;
 
         /// <summary>
@@ -154,6 +156,22 @@ namespace BetterControls
         }
 
         /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="index"><inheritdoc/></param>
+        /// <param name="items"><inheritdoc/></param>
+        public override void InsertRange(int index, params BetterToolbarItem[] items)
+        {
+            foreach (BetterToolbarItem item in items)
+            {
+                if (_uniqueItems.Contains(item))
+                    throw new ArgumentException("Cannot add or insert the item in more than one place. You must first remove it from its current location or clone it.");
+            }
+
+            base.InsertRange(index, items);
+        }
+
+        /// <summary>
         /// Gets a <see cref="BetterToolbarItem"/> from the collection by its identifier.
         /// </summary>
         /// <param name="uniqueIdentifier">The unique identifier of the item to get.</param>
@@ -187,6 +205,7 @@ namespace BetterControls
 
                 item.SetUniqueIdentifier(item.ItemIndex);
 
+                _uniqueItems.Add(item);
                 _uniqueIdentifierItems.Add(item.UniqueIdentifier, item);
             }
         }
@@ -209,6 +228,7 @@ namespace BetterControls
             {
                 BetterToolbarItem item = items[i];
 
+                _uniqueItems.Remove(item);
                 _uniqueIdentifierItems.Remove(item.UniqueIdentifier);
 
                 item.ResetUniqueIdentifier();

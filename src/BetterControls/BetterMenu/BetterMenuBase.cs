@@ -30,53 +30,36 @@ using System.Runtime.InteropServices;
 namespace BetterControls
 {
     /// <summary>
-    /// Extend this class to create a toolbar item.
+    /// Wrapper of the Windows Menu classes.
     /// </summary>
-    public abstract class BetterToolbarItemBase : ComponentCollectionElement
+    public abstract class BetterMenuBase : HandledComponentCollectionElement
     {
         /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarItemBase"/>.
+        /// Initialize a new instance of <see cref="BetterMenuBase"/>.
         /// </summary>
-        private protected BetterToolbarItemBase() { }
+        private protected BetterMenuBase() { }
 
         /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarItemBase"/>.
+        /// Initialize a new instance of <see cref="BetterMenuBase"/>.
         /// </summary>
-        /// <param name="ownerToolbar">The owner control as an instance of <see cref="BetterControl"/>.</param>
-        private protected BetterToolbarItemBase(BetterToolbar ownerToolbar)
-            : base(ownerToolbar)
+        /// <param name="ownerMenu">The owner menu as an instance of <see cref="BetterMenu"/>.</param>
+        private protected BetterMenuBase(BetterMenu ownerMenu)
+            : base(ownerMenu)
         { }
 
         /// <summary>
-        /// Gets the owner toolbar as an instance of <see cref="BetterToolbar"/>.
+        /// Gets the owner menu as an instance of <see cref="BetterMenu"/>.
         /// </summary>
         [Browsable(false)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public BetterToolbar OwnerToolbar
+        public BetterMenu OwnerMenu
         {
             get
             {
                 if (OwnerElement != null)
-                    return (BetterToolbar)OwnerElement;
+                    return (BetterMenu)OwnerElement;
 
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets a <see cref="bool"/> value indicating whether or not the handle for this owner toolbar has been created.
-        /// </summary>
-        [Browsable(false)]
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool IsOwnerHandleCreated {
-
-            get
-            {
-                if (OwnerToolbar != null)
-                    return OwnerToolbar.IsHandleCreated;
-
-                return false;
             }
         }
 
@@ -86,10 +69,10 @@ namespace BetterControls
         /// <returns>An instance of <see cref="HandleRef"/>.</returns>
         protected internal virtual HandleRef GetHandleRef()
         {
-            if (!IsOwnerHandleCreated)
+            if (!IsHandleCreated)
                 return default;
 
-            return new HandleRef(OwnerToolbar, OwnerToolbar.Handle);
+            return new HandleRef(this, Handle);
         }
     }
 }

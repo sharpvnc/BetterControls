@@ -24,39 +24,56 @@ SOFTWARE.
 
 */
 
+using System;
+using System.Windows.Forms;
+
 namespace BetterControls
 {
     /// <summary>
-    /// Represents a toolbar separator.
+    /// Used to create a low level reference of a specified menu.
     /// </summary>
-    public partial class BetterToolbarSeparator : BetterToolbarItem
+    internal class BetterMenuReference : ICommandExecutor, IDisposable
     {
         /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
+        /// Initialize a new instance of <see cref="BetterMenuReference"/>.
         /// </summary>
-        public BetterToolbarSeparator() { }
+        /// <param name="menu">The menu associated with this menu reference.</param>
+        public BetterMenuReference(BetterMenu menu)
+        {
+            _menu = menu ?? throw new ArgumentNullException(nameof(menu));
+
+            _globalCommand = new GlobalCommand(this);
+        }
+
+        public BetterMenu _menu;
+        private GlobalCommand _globalCommand;
 
         /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
+        /// Gets the <see cref="BetterMenu"/> associated with this menu reference.
         /// </summary>
-        /// <param name="parent">The parent toolbar as an instance of <see cref="BetterToolbar"/>.</param>
-        private protected BetterToolbarSeparator(BetterToolbar parent)
-            : base(parent)
-        { }
+        public BetterMenu Menu => _menu;
+
+        /// <summary>
+        /// Gets the unique identifier of this menu item, relative to the the entire process scope.
+        /// </summary>
+        public int UniqueIdentifier => _globalCommand.Identifier;
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <returns></returns>
-        protected override int ComputeAutoSizeWidth()
+        void ICommandExecutor.Execute()
         {
-            return 8;
+            if (_menu is BetterMenuButton button)
+                button.PerformClick();
         }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <returns><inheritdoc/></returns>
-        private protected override BetterToolbarItem CreateClone() => new BetterToolbarSeparator();
+        public void Dispose()
+        {
+            if (_globalCommand != null)
+                _globalCommand.Dispose();
+        }
     }
 }

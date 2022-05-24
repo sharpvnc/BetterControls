@@ -52,6 +52,12 @@
         /// <param name="ownerToolbar">The owner toolbar as an instance of <see cref="BetterToolbar"/>.</param>
         private protected BetterToolbarToggleButton(BetterToolbar ownerToolbar)
             : base(ownerToolbar)
-        { }        
+        { }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns><inheritdoc/></returns>
+        private protected override BetterToolbarItem CreateClone() => new BetterToolbarToggleButton();
     }
 }

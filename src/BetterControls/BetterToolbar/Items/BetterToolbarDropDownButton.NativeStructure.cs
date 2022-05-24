@@ -24,27 +24,37 @@ SOFTWARE.
 
 */
 
-using System;
-
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Represents a toolbar drop-down button.
     /// </summary>
-    public static class BetterToolbarExtensions
+    partial class BetterToolbarDropDownButton
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// <inheritdoc/>
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
+        /// <returns><inheritdoc/></returns>
+        internal override NativeMethods.TBBUTTON ComputeTbButton()
         {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+            NativeMethods.TBBUTTON structure = base.ComputeTbButton();
 
-            items.Add(new BetterToolbarSeparator());
+            structure.fsStyle = NativeMethods.BTNS_DROPDOWN;
+
+            return structure;
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns><inheritdoc/></returns>
+        internal override NativeMethods.TBBUTTONINFO ComputeTbButtonInfo()
+        {
+            NativeMethods.TBBUTTONINFO button = base.ComputeTbButtonInfo();
+
+            button.fsStyle |= NativeMethods.BTNS_DROPDOWN;
+
+            return button;
         }
     }
 }

@@ -125,8 +125,8 @@ namespace BetterControls
         /// <summary>
         /// Gets or sets the description of the button.
         /// </summary>
-        [Category(Categories.Appearance)]
-        [Description("The text of the toolbar item.")]
+        [Category(Categories.Data)]
+        [Description("The description of the toolbar item.")]
         [DefaultValue("")]
         [Localizable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
@@ -165,10 +165,10 @@ namespace BetterControls
         }
 
         /// <summary>
-        /// Gets or sets the index of the image from the menu image list to be shown in the menu item.
+        /// Gets or sets the index of the image from the toolbar image list to be shown in the toolbar item.
         /// </summary>
         [Category(Categories.Appearance)]
-        [Description("The index of the image from the menu image list to be shown in the menu item.")]
+        [Description("The index of the image from the toolbar image list to be shown in the toolbar item.")]
         [DefaultValue(-1)]
         [Localizable(false)]
         [Editor("ImageIndexEditor", typeof(UITypeEditor))]
@@ -433,6 +433,22 @@ namespace BetterControls
         {
             if (IsOwnerHandleCreated)
                 OwnerToolbar.FocusButton(this);
+        }
+
+        private protected override void ConfigureClone(BetterToolbarItem item)
+        {
+            base.ConfigureClone(item);
+
+            BetterToolbarButton button = (BetterToolbarButton)item;
+
+            button.Description = Description;
+            button.Enabled = Enabled;
+            button.ImageIndex = ImageIndex;
+            button.ImageKey = ImageKey;
+            button.Pressed = Pressed;
+            button.ShowImage = ShowImage;
+            button.Text = Text;
+            button.ToolTipText = ToolTipText;
         }
 
         /// <summary>

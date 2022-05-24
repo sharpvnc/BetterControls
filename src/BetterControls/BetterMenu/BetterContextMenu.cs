@@ -24,27 +24,22 @@ SOFTWARE.
 
 */
 
-using System;
+using System.ComponentModel;
+using System.Drawing;
 
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Represents a context menu.
     /// </summary>
-    public static class BetterToolbarExtensions
+    [ToolboxItem(true)]
+    [DesignTimeVisible(true)]
+    [ToolboxBitmap(typeof(BetterToolbar), "BetterContextMenuIcon.bmp")]
+    public class BetterContextMenu : BetterMenuRoot
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// Initialize a new instance of <see cref="BetterContextMenu"/>.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
-        {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            items.Add(new BetterToolbarSeparator());
-        }
+        public BetterContextMenu() { }
     }
 }

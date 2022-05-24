@@ -26,7 +26,6 @@ SOFTWARE.
 
 using BetterControls.ComponentModel;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -49,7 +48,6 @@ namespace BetterControls
         /// </summary>
         public BetterToolbar()
         {
-            SetStyle(ControlStyles.UserPaint, false);
             SetStyle(ControlStyles.FixedHeight, AutoSize);
             SetStyle(ControlStyles.FixedWidth, false);
 
@@ -463,7 +461,7 @@ namespace BetterControls
         /// </summary>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public virtual int Rows => unchecked((int)(long)SendMessage(NativeMethods.TB_GETROWS, 0, 0));
+        public virtual int Rows => unchecked((int)(long)UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_GETROWS, 0, 0));
 
         /// <summary>
         /// Gets or sets a <see cref="bool"/> value indicating whether or not tool tips should be shown.
@@ -539,6 +537,13 @@ namespace BetterControls
             }
         }
 
+
+
+
+
+
+
+
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
@@ -546,46 +551,59 @@ namespace BetterControls
         {
             get
             {
-                CreateParams cp = base.CreateParams;
+                CreateParams parameters = base.CreateParams;
 
-                cp.ClassName = NativeMethods.WC_TOOLBAR;
-                cp.Style |= NativeMethods.CCS_NOPARENTALIGN | NativeMethods.CCS_NORESIZE;
+                parameters.ClassName = NativeMethods.WC_TOOLBAR;
+                parameters.Style |= NativeMethods.CCS_NOPARENTALIGN | NativeMethods.CCS_NORESIZE;
 
                 if (!Divider)
-                    cp.Style |= NativeMethods.CCS_NODIVIDER;
+                    parameters.Style |= NativeMethods.CCS_NODIVIDER;
 
                 if (Wrappable)
-                    cp.Style |= NativeMethods.TBSTYLE_WRAPPABLE;
+                    parameters.Style |= NativeMethods.TBSTYLE_WRAPPABLE;
 
                 if (ShowToolTips && !DesignMode)
-                    cp.Style |= NativeMethods.TBSTYLE_TOOLTIPS;
+                    parameters.Style |= NativeMethods.TBSTYLE_TOOLTIPS;
 
-                cp.ExStyle &= ~NativeMethods.WS_EX_CLIENTEDGE;
-                cp.Style &= ~NativeMethods.WS_BORDER;
+                parameters.ExStyle &= ~NativeMethods.WS_EX_CLIENTEDGE;
+                parameters.Style &= ~NativeMethods.WS_BORDER;
 
                 if (BorderStyle == BorderStyle.Fixed3D)
-                    cp.ExStyle |= NativeMethods.WS_EX_CLIENTEDGE;
+                    parameters.ExStyle |= NativeMethods.WS_EX_CLIENTEDGE;
                 else if (BorderStyle == BorderStyle.FixedSingle)
-                    cp.Style |= NativeMethods.WS_BORDER;
+                    parameters.Style |= NativeMethods.WS_BORDER;
 
                 if (Appearance == BetterToolbarAppearance.Flat)
-                    cp.Style |= NativeMethods.TBSTYLE_FLAT;
+                    parameters.Style |= NativeMethods.TBSTYLE_FLAT;
 
                 if (TextAlign == BetterToolbarTextAlign.Right)
-                    cp.Style |= NativeMethods.TBSTYLE_LIST;
+                    parameters.Style |= NativeMethods.TBSTYLE_LIST;
 
-                return cp;
+                return parameters;
             }
         }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        protected override void CreateHandle()
+        private protected override void InitializeCommonControls()
         {
-            InitializeCommonControls();
+            if (RecreatingHandle)
+                return;
 
-            base.CreateHandle();
+            IntPtr userCookie = UnsafeNativeMethods.ThemingScope.Activate();
+
+            try
+            {
+                NativeMethods.INITCOMMONCONTROLSEX initializeCommonControls = new NativeMethods.INITCOMMONCONTROLSEX();
+                initializeCommonControls.dwICC = NativeMethods.ICC_BAR_CLASSES;
+
+                SafeNativeMethods.InitCommonControlsEx(initializeCommonControls);
+            }
+            finally
+            {
+                UnsafeNativeMethods.ThemingScope.Deactivate(userCookie);
+            }
         }
 
         /// <summary>
@@ -598,20 +616,20 @@ namespace BetterControls
 
             // Setup the toolbar based on the state of properties. These properties may have been set before
             // a handle was created, so setting them would have had no effect on the toolbar.
-            SendMessage(NativeMethods.TB_BUTTONSTRUCTSIZE, Marshal.SizeOf(typeof(NativeMethods.TBBUTTON)), 0);
+            UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_BUTTONSTRUCTSIZE, Marshal.SizeOf(typeof(NativeMethods.TBBUTTON)), 0);
 
             // The default is no drop-down arrows, so this is only necessary if drop-down arrows are enabled.
             if (DropDownArrows)
-                UnsafeNativeMethods.SendMessage(new HandleRef(this, Handle), NativeMethods.TB_SETEXTENDEDSTYLE, 0, NativeMethods.TBSTYLE_EX_DRAWDDARROWS);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETEXTENDEDSTYLE, 0, NativeMethods.TBSTYLE_EX_DRAWDDARROWS);
 
             if (ImageList != null)
             {
-                SendMessage(NativeMethods.TB_SETIMAGELIST, 0, ImageList.Handle);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETIMAGELIST, 0, ImageList.Handle);
             }
             else
             {
-                SendMessage(NativeMethods.TB_SETIMAGELIST, 0, IntPtr.Zero);
-                UnsafeNativeMethods.SendMessage(new HandleRef(this, Handle), NativeMethods.WM_USER + 32, 0, NativeMethods.Util.MAKELONG(ImageSize.Width, ImageSize.Height));
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETIMAGELIST, 0, IntPtr.Zero);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.WM_USER + 32, 0, NativeMethods.Util.MAKELONG(ImageSize.Width, ImageSize.Height));
             }
 
             InitializeItems();
@@ -624,28 +642,6 @@ namespace BetterControls
             EndUpdate();
         }
 
-        /// <summary>
-        /// Initializes common controls for the toolbar classes.
-        /// </summary>
-        private void InitializeCommonControls()
-        {
-            if (!RecreatingHandle)
-            {
-                IntPtr userCookie = UnsafeNativeMethods.ThemingScope.Activate();
-
-                try
-                {
-                    NativeMethods.INITCOMMONCONTROLSEX initializeCommonControls = new NativeMethods.INITCOMMONCONTROLSEX();
-                    initializeCommonControls.dwICC = NativeMethods.ICC_BAR_CLASSES;
-
-                    SafeNativeMethods.InitCommonControlsEx(initializeCommonControls);
-                }
-                finally
-                {
-                    UnsafeNativeMethods.ThemingScope.Deactivate(userCookie);
-                }
-            }
-        }
 
         /// <summary>
         /// Initializes items on the toolbar.
@@ -661,11 +657,11 @@ namespace BetterControls
             {
                 NativeMethods.TBBUTTON structure = item.ComputeTbButton();
 
-                Marshal.StructureToPtr(structure, (IntPtr)checked((long)items + (structureSize * item.ItemIndex)), true);
+                Marshal.StructureToPtr(structure, (IntPtr)checked((long)items + (structureSize * item.DisplayedItemIndex)), true);
             }
 
-            SendMessage(NativeMethods.TB_ADDBUTTONS, Items.Count, items);
-            SendMessage(NativeMethods.TB_AUTOSIZE, 0, 0);
+            UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_ADDBUTTONS, Items.Count, items);
+            UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_AUTOSIZE, 0, 0);
             UpdateItemDimensions();
             AdjustSize(Dock);
 
@@ -708,7 +704,7 @@ namespace BetterControls
         private protected void PerformCancelMode()
         {
             if (IsHandleCreated)
-                SendMessage(NativeMethods.WM_CANCELMODE, 0, 0);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.WM_CANCELMODE, 0, 0);
         }
 
         /// <summary>
@@ -723,10 +719,16 @@ namespace BetterControls
         public void FocusButton(BetterToolbarButton button)
         {
             if (IsHandleCreated)
+            {
                 if (button is null)
-                    SendMessage(NativeMethods.TB_SETHOTITEM, -1, 0);
+                {
+                    UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETHOTITEM, -1, 0);
+                }
                 else
-                    SendMessage(NativeMethods.TB_SETHOTITEM, button.ItemIndex, 0);
+                {
+                    UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETHOTITEM, button.DisplayedItemIndex, 0);
+                }
+            }
         }
 
         /// <summary>
@@ -833,16 +835,16 @@ namespace BetterControls
                 {
                     BetterMenuItem item = GetMenuItemByIndex(childHandle, i++);
 
-                    if (item != null && item.Parent != null && item.Parent is BetterMenuItem parentItem)
+                    if (item != null && item.OwnerElement != null && item.OwnerElement is BetterMenuItem parentItem)
                         return parentItem;
                 }
             }
             else
             {
                 // This menu item does not have any sub-items.
-                ICommandExecutor commandExecutor = Command.GetItem(identifier);
+                GlobalCommand globalCommand = GlobalCommand.GetCommandExecutor(identifier);
 
-                if (commandExecutor != null && commandExecutor is BetterMenuReference menuReference && menuReference.Menu is BetterMenuItem item)
+                if (globalCommand != null && globalCommand.CommandExecutor is BetterMenuReference menuReference && menuReference.Menu is BetterMenuItem item)
                     return item;
             }
 
@@ -862,7 +864,7 @@ namespace BetterControls
             }
 
             if (text.Length > 0)
-                return SendMessage(NativeMethods.TB_ADDSTRING, 0, text + '\0'.ToString());
+                return UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_ADDSTRING, 0, text + '\0'.ToString());
 
             return (IntPtr)(-1);
         }
@@ -894,7 +896,7 @@ namespace BetterControls
                 throw new ArgumentNullException(nameof(item));
             }
 
-            item.PerformSelect();
+            item.ItemFocused();
         }
 
         /// <summary>
@@ -972,6 +974,7 @@ namespace BetterControls
         {
             _currentScaleDX = factor.Width;
             _currentScaleDY = factor.Height;
+
             base.ScaleControl(factor, specified);
         }
 
@@ -1025,24 +1028,12 @@ namespace BetterControls
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param name="e"><inheritdoc/></param>
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
         void ISupportInitialize.BeginInit() => BeginUpdate();
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        void ISupportInitialize.EndInit()
-        {
-            EndUpdate();
-        }
+        void ISupportInitialize.EndInit() => EndUpdate();
 
         /// <summary>
         /// Ensures that the dimensions for each item in the toolbar are correct.
@@ -1081,247 +1072,8 @@ namespace BetterControls
             AdjustSize(Dock);
         }
 
-        /// <summary>
-        /// This method is raised before a drop-down button has been clicked with the intention of showing the drop-down menu.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="BetterToolbarMenuDroppedDownEventArgs"/></param>
-        protected virtual void OnBeforeMenuDroppedDown(BetterToolbarMenuDroppedDownEventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
+        
 
-            BeforeMenuDroppedDown?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised after a drop-down button has been clicked and has shown the drop-down menu.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="BetterToolbarMenuDroppedDownEventArgs"/></param>
-        protected virtual void OnAfterMenuDroppedDown(BetterToolbarMenuDroppedDownEventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            AfterMenuDroppedDown?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="Appearance"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnAppearanceChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            AppearanceChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="BorderStyle"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnBorderStyleChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-            
-            BorderStyleChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="Divider"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnDividerChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            DividerChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="DropDownArrows"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnDropDownArrowsChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            DropDownArrowsChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="ImageList"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnImageListChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            ImageListChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="ImageSize"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnImageSizeChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            ImageSizeChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="ShowToolTips"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnShowToolTipsChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            ShowToolTipsChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="TextAlign"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnTextAlignChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            TextAlignChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This method is raised when <see cref="Wrappable"/> has been changed.
-        /// </summary>
-        /// <param name="e">The event arguments as an instance of <see cref="EventArgs"/>.</param>
-        protected virtual void OnWrappableChanged(EventArgs e)
-        {
-            if (e is null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
-            WrappableChanged?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// This event is raised before a drop-down button has been clicked with the intention of showing the drop-down menu.
-        /// </summary>
-        public event EventHandler<BetterToolbarMenuDroppedDownEventArgs> BeforeMenuDroppedDown;
-
-        /// <summary>
-        /// This event is raised after a drop-down button has been clicked and has shown the drop-down menu.
-        /// </summary>
-        public event EventHandler<BetterToolbarMenuDroppedDownEventArgs> AfterMenuDroppedDown;
-
-        /// <summary>
-        /// This event is raised <see cref="Appearance"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> AppearanceChanged;
-
-        /// <summary>
-        /// This event is raised <see cref="BorderStyle"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> BorderStyleChanged;
-
-        /// <summary>
-        /// This event is raised <see cref="Divider"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> DividerChanged;
-
-        /// <summary>
-        /// This event is raised <see cref="DropDownArrows"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> DropDownArrowsChanged;
-
-        /// <summary>
-        /// This event is raised after <see cref="ImageList"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> ImageListChanged;
-
-        /// <summary>
-        /// This event is raised after <see cref="ImageSize"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> ImageSizeChanged;
-
-        /// <summary>
-        /// This event is raised after <see cref="ShowToolTips"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> ShowToolTipsChanged;
-
-        /// <summary>
-        /// This event is raised after <see cref="ShowToolTips"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> TextAlignChanged;
-
-        /// <summary>
-        /// This event is raised after <see cref="Wrappable"/> has been changed.
-        /// </summary>
-        public event EventHandler<EventArgs> WrappableChanged;
-
-        /// <summary>
-        /// Occurs when the <see cref="Control.ImeMode"/> property has changed.
-        /// </summary>
-        [Browsable(false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public new event EventHandler ImeModeChanged
-        {
-            add => base.ImeModeChanged += value;
-            remove => base.ImeModeChanged -= value;
-        }
-
-        /// <summary>
-        /// Occurs when the <see cref="Control.ForeColor"/> property has changed.
-        /// </summary>
-        [Browsable(false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public new event EventHandler ForeColorChanged
-        {
-            add => base.ForeColorChanged += value;
-            remove => base.ForeColorChanged -= value;
-        }
-
-        /// <summary>
-        /// Occurs when the <see cref="Control.RightToLeft"/> property value changes.
-        /// </summary>
-        [Browsable(false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public new event EventHandler RightToLeftChanged
-        {
-            add => base.RightToLeftChanged += value;
-            remove => base.RightToLeftChanged -= value;
-        }
 
         /// <summary>
         /// This event handler is raised when the handle associated with image list associated with this toolbar is recreated.
@@ -1358,238 +1110,6 @@ namespace BetterControls
             }
 
             ImageList = null;
-        }
-
-        private HashSet<long> constants = new HashSet<long>();
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="m"><inheritdoc/></param>
-        protected override void WndProc(ref Message m)
-        {
-            switch (m.Msg)
-            {
-                case NativeMethods.WM_COMMAND + NativeMethods.WM_REFLECT:
-                    if (WmReflectCommand(ref m))
-                        return;
-
-                    break;
-                case NativeMethods.WM_MENUSELECT:
-                    if (WmMenuSelect(ref m))
-                        return;
-
-                    break;
-                case NativeMethods.WM_NOTIFY:
-                    if (WmNotify(ref m))
-                        return;
-
-                    break;
-                case NativeMethods.WM_NOTIFY + NativeMethods.WM_REFLECT:
-                    if (WmReflectNotify(ref m))
-                        return;
-
-                    break;
-            }
-
-            base.WndProc(ref m);
-        }
-
-        /// <summary>
-        /// Handles the WM_COMMAND + WM_REFLECT message.
-        /// </summary>
-        private protected virtual bool WmReflectCommand(ref Message m)
-        {
-            int index = NativeMethods.Util.LOWORD(m.WParam);
-
-            if (Items[index] is BetterToolbarClickableButton button)
-                button.PerformClick();
-
-            ResetMouseEventArgs();
-
-            return false;
-        }
-
-        /// <summary>
-        /// Handles the WM_MENUSELECT message.
-        /// </summary>
-        private protected virtual bool WmMenuSelect(ref Message m)
-        {
-            // If the menu item is a popup item (i.e. it has sub-items) then the data sent
-            // with WM_MENUSELECT to identify which menu was selected differs than any other
-            // menu item. An index to the popup item is sent instead of command identifier.
-            int identifier = NativeMethods.Util.LOWORD(m.WParam);
-            int flags = NativeMethods.Util.HIWORD(m.WParam);
-
-            if ((flags & NativeMethods.MF_POPUP) != 0)
-            {
-                // The item that was selected has sub-items; therefore, we have to identify
-                // it recursively using the internal menu tree.
-                BetterMenuItem item = GetMenuItemByIndex(m.LParam, identifier);
-
-                if (item is BetterMenuButton button)
-                    button.PerformSelect();
-            }
-            else
-            {
-                // The item that was selected does not have any sub-items; therefore, we can
-                // identify it using its command identifier.
-                ICommandExecutor commandExecutor = Command.GetItem(identifier);
-
-                if (commandExecutor != null && commandExecutor is BetterMenuReference menuReference && menuReference.Menu is BetterMenuButton button)
-                    button.PerformSelect();
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Handles the WM_NOTIFY message.
-        /// </summary>
-        private protected virtual bool WmNotify(ref Message m) => WmReflectNotify(ref m);
-
-        /// <summary>
-        /// Handles the WM_NOTIFY + WM_REFLECT message.
-        /// </summary>
-        private protected virtual unsafe bool WmReflectNotify(ref Message m)
-        {
-            NativeMethods.NMHDR* note = (NativeMethods.NMHDR*)m.LParam;
-
-            switch (note->code)
-            {
-                case NativeMethods.TBN_QUERYINSERT:
-                    m.Result = (IntPtr)1;
-                    break;
-
-                case NativeMethods.TBN_DROPDOWN:
-                    TbnDropDown(ref m);
-                    break;
-                case NativeMethods.TTN_NEEDTEXTA:
-                    TtnNeedTextA(ref m);
-                    m.Result = (IntPtr)1;
-                    break;
-
-                case NativeMethods.TTN_NEEDTEXTW:
-                    if (Marshal.SystemDefaultCharSize == 2)
-                    {
-                        TtnNeedTextW(ref m);
-                        m.Result = (IntPtr)1;
-                    }
-                    break;
-                case NativeMethods.TBN_HOTITEMCHANGE:
-                    TbnHotItemChange(ref m);
-                    break;
-                case NativeMethods.NM_CUSTOMDRAW:
-                    if (!AutoSizeItems)
-                        UnsafeNativeMethods.SendMessage(new HandleRef(this, Handle), NativeMethods.TB_SETBUTTONSIZE, 0, NativeMethods.Util.MAKELPARAM(0, ItemHeight));
-
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Handles the TBN_DROPDOWN message within the WM_NOTIFY and WM_NOTIFY + WM_REFLECT messages.
-        /// </summary>
-        private protected virtual bool TbnDropDown(ref Message m)
-        {
-            NativeMethods.NMTOOLBAR note = (NativeMethods.NMTOOLBAR)m.GetLParam(typeof(NativeMethods.NMTOOLBAR));
-
-            BetterToolbarItem item = Items.GetItemByUniqueIdentifier(note.iItem);
-
-            if (item != null && item is BetterToolbarDropDownButton button)
-                PerformDropDown(button, false);
-
-            return false;
-        }
-
-        /// <summary>
-        /// Handles the TTN_NEEDTEXTA message within the WM_NOTIFY and WM_NOTIFY + WM_REFLECT messages.
-        /// </summary>
-        private protected virtual bool TtnNeedTextA(ref Message m) => TtnNeedTextW(ref m);
-
-        /// <summary>
-        /// Handles the TTN_NEEDTEXTW message within the WM_NOTIFY and WM_NOTIFY + WM_REFLECT messages.
-        /// </summary>
-        private protected virtual bool TtnNeedTextW(ref Message m)
-        {
-            NativeMethods.TOOLTIPTEXT toolTipText = (NativeMethods.TOOLTIPTEXT)m.GetLParam(typeof(NativeMethods.TOOLTIPTEXT));
-
-            BetterToolbarItem item = Items.GetItemByUniqueIdentifier((int)toolTipText.hdr.idFrom);
-
-            // Only items that are buttons (i.e. not a separator) are capable
-            // of showing tool tips.
-            if (item != null && item is BetterToolbarButton button)
-            {
-                toolTipText.hinst = IntPtr.Zero;
-
-                if (button.ToolTipText != null)
-                    toolTipText.lpszText = GetToolTipText(button);
-
-                if (string.IsNullOrEmpty(toolTipText.lpszText))
-                    toolTipText.lpszText = null;
-
-                if (RightToLeft == RightToLeft.Yes)
-                    toolTipText.uFlags |= NativeMethods.TTF_RTLREADING;
-
-                Marshal.StructureToPtr(toolTipText, m.LParam, false);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Handles the TBN_HOTITEMCHANGE message within the WM_NOTIFY and WM_NOTIFY + WM_REFLECT messages.
-        /// </summary>
-        private protected virtual bool TbnHotItemChange(ref Message m)
-        {
-            // Should we set the hot item?
-            NativeMethods.NMTBHOTITEM nmTbHotItem = (NativeMethods.NMTBHOTITEM)m.GetLParam(typeof(NativeMethods.NMTBHOTITEM));
-
-            BetterToolbarItem item = Items.GetItemByUniqueIdentifier(nmTbHotItem.idNew);
-
-            if (item != null && item is BetterToolbarButton button)
-            {
-                if (NativeMethods.HICF_ENTERING == (nmTbHotItem.dwFlags & NativeMethods.HICF_ENTERING))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_LEAVING == (nmTbHotItem.dwFlags & NativeMethods.HICF_LEAVING))
-                {
-                    _hotButton = null;
-                }
-                else if (NativeMethods.HICF_MOUSE == (nmTbHotItem.dwFlags & NativeMethods.HICF_MOUSE))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_ARROWKEYS == (nmTbHotItem.dwFlags & NativeMethods.HICF_ARROWKEYS))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_ACCELERATOR == (nmTbHotItem.dwFlags & NativeMethods.HICF_ACCELERATOR))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_DUPACCEL == (nmTbHotItem.dwFlags & NativeMethods.HICF_DUPACCEL))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_RESELECT == (nmTbHotItem.dwFlags & NativeMethods.HICF_RESELECT))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_LMOUSE == (nmTbHotItem.dwFlags & NativeMethods.HICF_LMOUSE))
-                {
-                    _hotButton = button;
-                }
-                else if (NativeMethods.HICF_TOGGLEDROPDOWN == (nmTbHotItem.dwFlags & NativeMethods.HICF_TOGGLEDROPDOWN))
-                {
-                    _hotButton = button;
-                }
-            }
-
-            return false;
         }
     }
 }

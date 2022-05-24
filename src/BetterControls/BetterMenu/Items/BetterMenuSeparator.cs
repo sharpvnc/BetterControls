@@ -24,27 +24,30 @@ SOFTWARE.
 
 */
 
-using System;
+using System.ComponentModel;
 
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Represents a menu separator.
     /// </summary>
-    public static class BetterToolbarExtensions
+    public partial class BetterMenuSeparator : BetterMenuItem
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// Initialize a new instance of <see cref="BetterMenuSeparator"/>.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
-        {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+        public BetterMenuSeparator() { }
 
-            items.Add(new BetterToolbarSeparator());
-        }
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override BetterMenuItemCollection Items => base.Items;
+
+        /// <summary>
+        /// Initialize a new instance of <see cref="BetterMenuSeparator"/>.
+        /// </summary>
+        /// <param name="ownerMenu">The owner menu as an instance of <see cref="BetterMenu"/>.</param>
+        private protected BetterMenuSeparator(BetterMenu ownerMenu)
+            : base(ownerMenu)
+        { }
     }
 }

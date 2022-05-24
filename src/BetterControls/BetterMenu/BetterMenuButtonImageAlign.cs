@@ -24,27 +24,48 @@ SOFTWARE.
 
 */
 
-using System;
-
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// The different alignments for images within menu items.
     /// </summary>
-    public static class BetterToolbarExtensions
+    public enum BetterMenuButtonImageAlign
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// Top-left alignment.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
-        {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            items.Add(new BetterToolbarSeparator());
-        }
+        TopLeft = 0,
+        /// <summary>
+        /// Top-middle alignment.
+        /// </summary>
+        TopMiddle = 1,
+        /// <summary>
+        /// Top-right alignment.
+        /// </summary>
+        TopRight = 2,
+        /// <summary>
+        /// Middle-left alignment.
+        /// </summary>
+        MiddleLeft = 3,
+        /// <summary>
+        /// Middle-middle alignment.
+        /// </summary>
+        MiddleMiddle = 4,
+        /// <summary>
+        /// Middle-right alignment.
+        /// </summary>
+        MiddleRight = 5,
+        /// <summary>
+        /// Bottom-left alignment.
+        /// </summary>
+        BottomLeft = 6,
+        /// <summary>
+        /// Bottom-middle alignment.
+        /// </summary>
+        BottomMiddle = 7,
+        /// <summary>
+        /// Bottom-right alignment.
+        /// </summary>
+        BottomRight = 8
     }
 }

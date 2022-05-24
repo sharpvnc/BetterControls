@@ -24,39 +24,68 @@ SOFTWARE.
 
 */
 
+using System;
+
 namespace BetterControls
 {
     /// <summary>
-    /// Represents a toolbar separator.
+    /// Wrapper of the Windows Menu classes.
     /// </summary>
-    public partial class BetterToolbarSeparator : BetterToolbarItem
+    partial class BetterMenu
     {
-        /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
-        /// </summary>
-        public BetterToolbarSeparator() { }
-
-        /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
-        /// </summary>
-        /// <param name="parent">The parent toolbar as an instance of <see cref="BetterToolbar"/>.</param>
-        private protected BetterToolbarSeparator(BetterToolbar parent)
-            : base(parent)
-        { }
-
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <returns></returns>
-        protected override int ComputeAutoSizeWidth()
+        protected override void CreateHandle()
         {
-            return 8;
+            if (!IsHandleCreated)
+                _handle = UnsafeNativeMethods.CreatePopupMenu();
+
+            base.CreateHandle();
         }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <returns><inheritdoc/></returns>
-        private protected override BetterToolbarItem CreateClone() => new BetterToolbarSeparator();
+        protected override void DestroyHandle()
+        {
+            if (IsHandleCreated)
+            {
+                UnsafeNativeMethods.DestroyMenu(GetHandleRef());
+                _handle = IntPtr.Zero;
+
+                foreach (BetterMenuItem item in Items)
+                    item.DestroyHandle();
+            }
+
+            base.DestroyHandle();
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="e"><inheritdoc/></param>
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+
+            InitializeItems();
+        }
+
+        /// <summary>
+        /// Initializes items in the menu.
+        /// </summary>
+        private void InitializeItems()
+        {
+            foreach (BetterMenuItem item in Items)
+            {
+                if (!item.Visible)
+                    continue;
+
+                NativeMethods.MENUITEMINFO_T structure = item.ComputeMenuItemInfoT();
+
+                UnsafeNativeMethods.InsertMenuItem(GetHandleRef(), -1, true, structure);
+            }
+        }
     }
 }

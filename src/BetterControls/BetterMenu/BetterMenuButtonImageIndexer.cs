@@ -24,39 +24,48 @@ SOFTWARE.
 
 */
 
+using BetterControls.Drawing;
+using System;
+using System.ComponentModel;
+using System.Windows.Forms;
+
 namespace BetterControls
 {
     /// <summary>
-    /// Represents a toolbar separator.
+    /// Used to provide a mechanism for a menu button to support using both image indexes and image keys.
     /// </summary>
-    public partial class BetterToolbarSeparator : BetterToolbarItem
+    public class BetterMenuButtonImageIndexer : ImageIndexer
     {
         /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
+        /// Initialize a new instance of <see cref="BetterMenuButtonImageIndexer"/>.
         /// </summary>
-        public BetterToolbarSeparator() { }
-
-        /// <summary>
-        /// Initialize a new instance of <see cref="BetterToolbarSeparator"/>.
-        /// </summary>
-        /// <param name="parent">The parent toolbar as an instance of <see cref="BetterToolbar"/>.</param>
-        private protected BetterToolbarSeparator(BetterToolbar parent)
-            : base(parent)
-        { }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <returns></returns>
-        protected override int ComputeAutoSizeWidth()
+        /// <param name="ownerMenuButton">The parent toolbar item as an instance of <see cref="BetterMenuButton"/>.</param>
+        public BetterMenuButtonImageIndexer(BetterMenuButton ownerMenuButton)
         {
-            return 8;
+            _ownerMenuButton = ownerMenuButton ?? throw new ArgumentNullException(nameof(ownerMenuButton));
         }
 
+        private BetterMenuButton _ownerMenuButton;
+
+        /// <summary>
+        /// Gets the owner menu item as an instance of <see cref="BetterMenuButton"/>.
+        /// </summary>
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public BetterMenuButton OwnerMenuButton => _ownerMenuButton;
+
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <returns><inheritdoc/></returns>
-        private protected override BetterToolbarItem CreateClone() => new BetterToolbarSeparator();
+        protected override ImageList ImageList
+        {
+            get
+            {
+                if (OwnerMenuButton != null)
+                    return OwnerMenuButton.MenuRoot.ImageList;
+
+                return null;
+            }
+        }
     }
 }

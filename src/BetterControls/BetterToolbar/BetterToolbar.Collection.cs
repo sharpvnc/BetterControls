@@ -77,9 +77,9 @@ namespace BetterControls
             if (IsHandleCreated)
             {
                 NativeMethods.TBBUTTON structure = item.ComputeTbButton();
-                UnsafeNativeMethods.SendMessage(new HandleRef(this, Handle), NativeMethods.TB_INSERTBUTTON, item.UniqueIdentifier, ref structure);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_INSERTBUTTON, item.UniqueIdentifier, ref structure);
 
-                SendMessage(NativeMethods.TB_AUTOSIZE, 0, 0);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_AUTOSIZE, 0, 0);
                 UpdateItemDimensions();
             }
         }
@@ -114,12 +114,12 @@ namespace BetterControls
                 throw new ArgumentNullException(nameof(items));
             }
 
-            SendMessage(NativeMethods.TB_AUTOSIZE, 0, 0);
+            UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_AUTOSIZE, 0, 0);
             if (!AutoSizeItems)
             {
-                UnsafeNativeMethods.SendMessage(new HandleRef(this, Handle), NativeMethods.TB_SETBUTTONSIZE, 0, NativeMethods.Util.MAKELPARAM(0, ItemHeight));
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETBUTTONSIZE, 0, NativeMethods.Util.MAKELPARAM(0, ItemHeight));
             }
-            SendMessage(NativeMethods.TB_AUTOSIZE, 0, 0);
+            UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_AUTOSIZE, 0, 0);
 
             if ((flags & CollectionElementItemChangedFlags.RecreateHandle) != 0)
                 RecreateHandle();

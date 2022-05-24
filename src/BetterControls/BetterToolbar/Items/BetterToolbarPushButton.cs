@@ -53,5 +53,11 @@
         private protected BetterToolbarPushButton(BetterToolbar ownerToolbar)
             : base(ownerToolbar)
         { }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns><inheritdoc/></returns>
+        private protected override BetterToolbarItem CreateClone() => new BetterToolbarPushButton();
     }
 }

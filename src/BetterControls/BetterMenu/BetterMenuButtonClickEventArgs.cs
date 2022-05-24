@@ -29,22 +29,27 @@ using System;
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Event arguments for when a direct or indirect descendant menu button of a menu root is clicked.
     /// </summary>
-    public static class BetterToolbarExtensions
+    public class BetterMenuButtonClickEventArgs : EventArgs
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// Initialize a new instance of <see cref="BetterMenuButtonClickEventArgs"/>.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
+        /// <param name="menuItem">The menu item that was clicked.</param>
+        public BetterMenuButtonClickEventArgs(BetterMenuButton menuItem)
         {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            items.Add(new BetterToolbarSeparator());
+            MenuItem = menuItem ?? throw new ArgumentNullException(nameof(menuItem));
         }
+
+        /// <summary>
+        /// Gets the menu item that was clicked.
+        /// </summary>
+        public BetterMenuButton MenuItem { get; }
+
+        /// <summary>
+        /// Gets a <see cref="bool"/> value indicating whether or not the menu item that was clicked is a direct descendant of the menu root.
+        /// </summary>
+        public bool DirectDescendant => MenuItem.OwnerMenu == MenuItem.MenuRoot;
     }
 }

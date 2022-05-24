@@ -24,27 +24,24 @@ SOFTWARE.
 
 */
 
-using System;
-
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Represents a menu separator.
     /// </summary>
-    public static class BetterToolbarExtensions
+    partial class BetterMenuSeparator
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// <inheritdoc/>
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
+        /// <returns><inheritdoc/></returns>
+        internal override NativeMethods.MENUITEMINFO_T ComputeMenuItemInfoT()
         {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+            NativeMethods.MENUITEMINFO_T menuItem = base.ComputeMenuItemInfoT();
 
-            items.Add(new BetterToolbarSeparator());
+            menuItem.fType |= NativeMethods.MFT_SEPARATOR;
+
+            return menuItem;
         }
     }
 }

@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 using BetterControls.ComponentModel;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -36,7 +37,7 @@ namespace BetterControls
     [ToolboxItem(false)]
     [DesignTimeVisible(false)]
     [Designer("BetterToolbarItemDesigner")]
-    public abstract partial class BetterToolbarItem : BetterToolbarItemBase
+    public abstract partial class BetterToolbarItem : BetterToolbarItemBase, ICloneable
     {
         /// <summary>
         /// Initialize a new instance of <see cref="BetterToolbarItem"/>.
@@ -46,7 +47,7 @@ namespace BetterControls
         /// <summary>
         /// Initialize a new instance of <see cref="BetterToolbarItem"/>.
         /// </summary>
-        /// <param name="ownerToolbar">The parent toolbar as an instance of <see cref="BetterToolbar"/>.</param>
+        /// <param name="ownerToolbar">The owner toolbar as an instance of <see cref="BetterToolbar"/>.</param>
         private protected BetterToolbarItem(BetterToolbar ownerToolbar)
             : base(ownerToolbar)
         { }
@@ -75,6 +76,21 @@ namespace BetterControls
 
                     PerformItemChanged(CollectionElementItemChangedFlags.None);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the displayed index of this item in the toolbar.
+        /// </summary>
+        [Browsable(false)]
+        public virtual int DisplayedItemIndex
+        {
+            get
+            {
+                if (IsOwnerHandleCreated)
+                    return ItemIndex;
+
+                return -1;
             }
         }
 
@@ -192,7 +208,7 @@ namespace BetterControls
             {
                 NativeMethods.TBBUTTONINFO structure = ComputeTbButtonInfo();
 
-                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETBUTTONINFO, ItemIndex, ref structure);
+                UnsafeNativeMethods.SendMessage(GetHandleRef(), NativeMethods.TB_SETBUTTONINFO, DisplayedItemIndex, ref structure);
 
                 // Reflect this change to the parent control.
                 OwnerToolbar.PerformItemsChanged(flags, new BetterToolbarItem[]
@@ -200,6 +216,41 @@ namespace BetterControls
                     this
                 });
             }
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            BetterToolbarItem item = CreateClone();
+
+            ConfigureClone(item);
+
+            return item;
+        }
+
+        /// <summary>
+        /// Creates a new concrete type that should be cloned.
+        /// </summary>
+        /// <returns></returns>
+        private protected abstract BetterToolbarItem CreateClone();
+
+        /// <summary>
+        /// Configures the created concrete type that should be cloned.
+        /// </summary>
+        /// <param name="item">The concrete type that should be cloned.</param>
+        private protected virtual void ConfigureClone(BetterToolbarItem item)
+        {
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            item.AutoSize = AutoSize;
+            item.Visible = Visible;
+            item.Width = Width;
         }
 
         /// <summary>

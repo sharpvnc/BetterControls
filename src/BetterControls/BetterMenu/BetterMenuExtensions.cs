@@ -29,22 +29,22 @@ using System;
 namespace BetterControls
 {
     /// <summary>
-    /// Extension methods for <see cref="BetterToolbar"/>.
+    /// Extension methods for menus.
     /// </summary>
-    public static class BetterToolbarExtensions
+    public static class BetterMenuExtensions
     {
         /// <summary>
-        /// Adds a <see cref="BetterToolbarSeparator"/> to the collection of toolbar items.
+        /// Adds a <see cref="BetterMenuSeparator"/> to the collection of menu items.
         /// </summary>
-        /// <param name="items">The collection of toolbar items to add to.</param>
-        public static void AddSeparator(this BetterToolbarItemCollection items)
+        /// <param name="items">The collection of menu items to add to.</param>
+        public static void AddSeparator(this BetterMenuItemCollection items)
         {
             if (items is null)
             {
                 throw new ArgumentNullException(nameof(items));
             }
 
-            items.Add(new BetterToolbarSeparator());
+            items.Add(new BetterMenuSeparator());
         }
     }
 }
